@@ -1,0 +1,148 @@
+func1.dat和func2.dat 里面的10+9个函数主要调用dlsym来布置标准函数表。显然可以认为so是隐藏.plt和.got的标准导入表的。函数的内存分布对应关系见func_analysis.txt
+
+sub_86ef8直接调用sub_25110，具体是sub_25110(R0, R1, R2)
+sub_25110 --> sub_23810
+
+sub_24894(R0, R1, R2) //R0--栈地址；R2--字符串地址；R3--int
+
+
+86a28	调用ptrace进行反调试，这个函数调用在env->RegitsteNatives之前。
+
+修改PC，跳过86a28的反调试函数，可以将断点设在RegitsteNatives上，然后回溯调用路径。正像分析过来的话C++的初始化函数是在太多太复杂，又涉及每一个用到的字符串解密，而且代码还进行了混淆，加入了许多混乱的循环和switch。
+
+采用修改PC，跳过反调试函数后，程序可以在IDA调试下正常运行。说明反调试函数中只有单纯的反调试代码。
+
+
+
+11244	__attribute__((constructor))	申明为这个属性的函数，会在main之前被调用。实际上gcc是将其编译到了一个独立的段中，需要分析elf头的entry才能判断。
+		我是利用其free函数对应的malloc函数下断，然后分析LR，获取其地址的。
+
+
+attachBaseContext == sub_11b19 (切换到thumb模式 sub_11b18)
+	混淆迷宫出口_1: 1206c
+		12154:	BL android_log_print(6, "debug", "in..")
+		1215c:	BL 176A0(JNI_env)
+		1218e:	BL sub_16250	;解密字符串: 955D0 -> anddroid/content/ContextWrapper
+	混淆迷宫出口_2：121a0
+		121AE:	BLX R2 		;1e100041 = env->FindClass("anddroid/content/ContextWrapper")
+	混淆迷宫出口_3: 127f4
+		if 没解密_1
+			sub_16250
+		if 没解密_2
+			sub_16250
+	混淆迷宫出口_4: 12866
+		1287e:	BLX R4		;43647468 = env->GetMethodID(env, 1e100041, "attacheBaseContext", "(Landroid/content/Context;)V")
+	混淆迷宫出口_5: 12a34
+		12a4e:	BL sub_1446c	;R0 = env, R1, R2, R3 = 43647468
+		12a54:	BL gettimeofday
+		12a6a:	BL sub_144e4
+		12a6e:	BL sub_14d34
+		if	没解密
+			sub_16308		;95490 -> android/content/Context
+	混淆迷宫出口_6: 12ab2
+		12ac2:	BLX R2 		;1ef00045 = env->FindClass(env, "android/content/Context")
+	混淆迷宫出口_7:	12bee
+		if 没解密_1
+			sub_86a58		;95258 -> getPackageName
+		if 没解密_2
+			sub_16250
+	混淆迷宫出口_8:	12c6c
+		12c86:	BLX R4 		; = env->GetMethodID(env, 1ef00045, "getPackageName", "()Ljava/lang/String")
+	混淆迷宫出口_9:	12d7a
+		if 没解密_1
+			sub_16250		;95267 -> getClassLoader
+		if 没解密_2
+			sub_16250		;954fa -> ()Ljava/lang/ClassLoader;
+	混淆迷宫出口_10: 12e4c
+		12e6c:	BLX R4 		;43648B38 = env->GetMethodID(env, 1ef00045, "getClassLoader", "()Ljava/lang/ClassLoader")
+	混淆迷宫出口_11: 12eaa
+		12ebe:	BL sub_143cc
+	混淆迷宫出口_12: 11cca	//这里因为F8跑飞，所以中间可能会有一些遗漏，不过就寻找关键函数来说，这些遗漏也可能不需要分析i
+		//这里有个问题: 11b38: BGT loc_48011bf6 条件为假的时候，F8就直接跑了。F7的话直接跑到 11B52: BL sub_143cc
+		11b52:	BL sub_143cc
+	**	11b62:	BL sub_86A68 	;这个函数创建线程，并等待线程结束。（线程调用mmap加载解密文件）
+		11b80:	BLX R2 			;jni->PushLocalFrame(env, 4)
+		if 没解密
+			11bb6:	sub_16250 	;9540c -> java/lang/ClassLoader
+		11bd6:	BLX R2 			;jni->FindClass(env, "java/lang/ClassLoader")
+		if 没解密_1
+			11d1a:	BL sub_16308 	;95640 -> (Ljava/lang/String;)Ljava/lang/Class;
+		if 没解密_2
+			11d52:	BL sub_16308	;95200 -> loadClass
+		11d80:	BLX R4 			;jni->GetMethodID(env, hClass, "loadClass", ...)
+		if 没解密
+			11f0c:	BL sub_16250 	;95439 -> android/app/Application
+		11f3c:	BLX R2 			;jni->FindClass(env, "android/app/Application")
+		if 没解密_1
+			12200:	BL sub_16250
+		if 没解密_2
+			12238:	BL sub_16308 	;95192 -> attach
+		12268:	BLX R4 			;jni->GetMethodID(env, hClass, "attach", "(Landroid/content/Context;)V")
+		122c6:	BLX R2 			;strcmp(NULL, NULL)
+		12628:	CMP R2, #0
+		if 没解密
+			1232e:	BL sub_16308 	;954a8 -> android.app.Application
+		123dc: BLX R2 			;env->NewStringUTF("android.app.Application")
+		12636: BL sub_143cc 	;R0 = env, R1 = hClass, R2 = pMethod, R3 = hClass)
+		12666: CMP R2, #0
+		if 没解密
+			1258a:	BL sub_162ac
+		if 没解密
+			125c0:	BL sub_16250 	;95199 -> <init>
+		125ee:	BLX R4 			;env->GetMethodID(env, hClass, "<init>", "()V")
+		1268a:	BL sub_15a38 	;R0 = env, R1 = hClass, R2 = pMethod
+		12698:	BL sub_1438c 	;R0 = env, R1 = hClass, R2 = pMethod
+		123a0:	BLX R2 			;env->PopLocalFrame
+		1229c:	BLX R2 			;env->NewGlobalRef
+		11c84:	BL sub_86a78
+		11c8c:	BL sub_86A88
+		11c90:	BL sub_86a98
+		11cba:	BL sub_86aa8
+		12f4a:	退出函数代码
+
+
+
+
+
+	这里竟然调用 sub_20B98, 从而调用 pcreate_thread。不知道怎么调用的
+	12828:	BL sub_16250 	;解密字符串
+
+
+sub_176A0
+	混淆迷宫出口 176ec
+
+
+sub_20ae4 调用 sub_86cf8 调用 sub_86cfc 调用 sub_38904 调用 sub_38130 调用 sub_38914
+so中第一次调用 mmap 是从 sub_38914 中发起的，在38c90: BLX R5。
+mmap返回的内存地址为 47ff0000。
+
+实际上从mmap的断点开始LR+栈回溯，(如果用"xref to"只能找到 sub_86cfc)，实际上这个函数有一个 sub_86cf8 的壳，最终栈回溯找到 sub_20ae4 (这个函数没有任何"xref to")，再往前栈回溯可以发现：
+	4819BEEC  40016E4C  libc.so:__thread_entry+34
+显然这个是线程函数
+
+可以做一个猜想，整个的dex解密过程与evilapk400不同，被分拆到了不同的线程中进行，通过同步，在线程之间共享关键变量。
+
+在pthread_join 函数开始处下断点，回溯调用函数是 sub_20bcc。
+这也是一个没有"xref to"的函数，应该也是一个线程函数。
+问题是pthread_join的R0参数值很大，和IDA中的线程ID完全对不上。
+
+
+pcreate_thread 跟踪：
+1、
+sub_86C58 是 sub_20B98 的封装	（这种封装的作用可以使得"xref to"失效）
+sub_20B98 在 20BBC: BLX R5 调用pcreate_thread。
+pcreate_thread(NULL, 0, sub_20AE5, param_95AB4, 959A0, threadid_95AB0)
+	param_95AB4 -> /data/data/crackme.a3/lib/libmobisecz.so
+pthread_join (*threadid_95AB0)
+
+2、
+pcreate_thread(NULL, 0, sub_35)
+
+
+attachBaseContext -> sub_86A68 -> sub_86A6C -> sub_1BC68 -> 1A8E8 ->(这一步是通过 .data.rel.ro:934c8 表间接调用的) sub_20374 -> sub_1A864 -> sub_86C58 -> sub_20B98 -> pcreate_thread
+sub_1A2A0 -> sub_17E30 -> sub_86BB8 -> sub_20BCC -> pthread_join
+
+
+adb shell am start -D -n crackme.a3/.Main
+
+jdb -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=8700

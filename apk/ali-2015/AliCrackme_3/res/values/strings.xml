@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">破获X星球坐标</string>
+    <string name="msg">Bob惊讶的发现飞碟来自遥远的X星球，他们是一个残暴的种族，专门寻找有资源的星球，大肆掠夺后将其毁灭。他们已经知道地球的坐标，为了避免地球毁灭，Bob决定跟随银河飞行队去摧毁X星球。</string>
+    <string name="msg_todo">请帮Bob输入X星球的坐标：</string>
+    <string name="btn_send">发送</string>
+    <string name="resp_sos">银河飞行队回复：全部资源正在抢救泰坦尼克号，你得靠自己了，祝你好运！</string>
+    <string name="resp_invalid">银河飞行队回复：你在说什么？</string>
+    <string name="resp_invalid1">银河飞行队回复：%$#@!~*</string>
+    <string name="resp_bombed">你的队友被炸弹击中</string>
+    <string name="resp_hq_quit">银河飞行队退出了游戏</string>
+    <string name="resp_moon">月球被摧毁</string>
+    <string name="resp_success">坐标正确，准备启航!</string>
+</resources>
