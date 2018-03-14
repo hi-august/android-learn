@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://E:\Downloads\xposed-keyboard-recorder\.idea\modules\app\app.iml" filepath="E:\Downloads\xposed-keyboard-recorder\.idea\modules\app\app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/xposed-keyboard-recorder.iml" filepath="$PROJECT_DIR$/xposed-keyboard-recorder.iml" />
+      <module fileurl="file://E:\Downloads\xposed-keyboard-recorder\.idea\modules\xposed-keyboard-recorder.iml" filepath="E:\Downloads\xposed-keyboard-recorder\.idea\modules\xposed-keyboard-recorder.iml" />
+    </modules>
+  </component>
+</project>
